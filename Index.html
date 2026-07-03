@@ -3164,20 +3164,24 @@
             btn.textContent = "⏳ Activando...";
             btn.disabled = true;
 
+            // Helper: cualquier promesa con timeout, para que nada deje el botón pegado
+            const withTimeout = (promise, ms, label) =>
+                Promise.race([
+                    promise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error(label + " tardó demasiado")), ms))
+                ]);
+
             try {
                 // Esperar el SW con timeout de 5 segundos
                 let reg;
                 try {
-                    reg = await Promise.race([
-                        navigator.serviceWorker.ready,
-                        new Promise((_, reject) => setTimeout(() => reject(new Error("SW timeout")), 5000))
-                    ]);
+                    reg = await withTimeout(navigator.serviceWorker.ready, 5000, "Service worker");
                 } catch (e) {
                     // SW no instalado o tardó mucho — intentar registrarlo ahora
                     showToast("⏳ Instalando service worker...");
                     try {
                         reg = await navigator.serviceWorker.register(new URL("sw.js", location.href).href);
-                        await navigator.serviceWorker.ready;
+                        reg = await withTimeout(navigator.serviceWorker.ready, 5000, "Service worker");
                     } catch (swErr) {
                         showToast("❌ No se pudo instalar el service worker. ¿El archivo sw.js está en la raíz del repo?");
                         btn.textContent = "🔔 Activar notificaciones";
@@ -3196,18 +3200,26 @@
                     return;
                 }
 
-                const permission = await Notification.requestPermission();
+                // Timeout de 10s para el permiso — si el navegador no muestra el diálogo, no se queda colgado
+                const permission = await withTimeout(Notification.requestPermission(), 10000, "La solicitud de permiso");
                 if (permission !== "granted") {
-                    showToast("🔕 Necesitas dar permiso para recibir notificaciones");
+                    showToast(permission === "denied"
+                        ? "🔕 Bloqueaste las notificaciones. Actívalas desde el candado 🔒 junto a la URL."
+                        : "🔕 Necesitas dar permiso para recibir notificaciones");
                     btn.disabled = false;
                     await updatePushButtonLabel();
                     return;
                 }
 
-                const sub = await reg.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-                });
+                // Timeout de 10s para subscribe() — es el punto donde más se cuelga en Android/Chrome
+                const sub = await withTimeout(
+                    reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                    }),
+                    10000,
+                    "El registro push"
+                );
                 const subJson = sub.toJSON();
                 const { error } = await db.from("push_subscriptions").upsert({
                     author: currentAuthor || null,
