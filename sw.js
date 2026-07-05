@@ -1,5 +1,5 @@
 // sw.js — Service Worker: habilita instalación PWA + recibe push reales
-const CACHE_NAME = "recuerdos-cache-v1";
+const CACHE_NAME = "recuerdos-cache-v2";
 const CORE_ASSETS = [
     "./",
     "./index.html",
@@ -26,12 +26,32 @@ self.addEventListener("activate", (event) => {
     self.clients.claim();
 });
 
-// ── FETCH: cache-first para lo estático, red directa para todo lo demás (Supabase, etc.) ──
+// ── FETCH: network-first para el HTML (así siempre ves la versión más reciente
+// sin depender de que cambie sw.js), cache-first para el resto de lo estático ──
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
     // Solo interceptamos peticiones del mismo origen (no Supabase, no fonts CDN)
     if (url.origin !== location.origin) return;
 
+    const isHTML = event.request.mode === "navigate" ||
+        url.pathname.endsWith("/") ||
+        url.pathname.endsWith("index.html");
+
+    if (isHTML) {
+        // Network-first: intenta traer la versión nueva; si no hay internet, usa la guardada
+        event.respondWith(
+            fetch(event.request)
+                .then((res) => {
+                    const clone = res.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+                    return res;
+                })
+                .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
+        );
+        return;
+    }
+
+    // Cache-first para lo demás (íconos, manifest, etc.)
     event.respondWith(
         caches.match(event.request).then((cached) => {
             return (
