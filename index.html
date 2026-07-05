@@ -2268,7 +2268,8 @@
         function switchTab(name, el) {
             document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-            el.classList.add("active");
+            const tabBtn = el || document.querySelector(`.tab[onclick*="'${name}'"]`);
+            if (tabBtn) tabBtn.classList.add("active");
             document.getElementById("tab-" + name).classList.add("active");
         }
 
@@ -2557,7 +2558,7 @@
             if (!note) return;
 
             // Ir a la pestaña de notas y rellenar el formulario con los datos actuales
-            switchTab("notes");
+            switchTab("notas");
             document.getElementById("note-title").value = note.title || "";
             document.getElementById("note-body").value = note.body || "";
 
