@@ -1966,12 +1966,34 @@
     <!-- CANVAS CONFETTI -->
     <canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;display:none;"></canvas>
 
+    <!-- MODAL: Tiempo juntos -->
+    <div id="time-together-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closeTimeTogetherModal()">
+        <div style="background:var(--bg,#FFFBF8);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+            <div style="font-size:40px;margin-bottom:6px;">💕</div>
+            <div style="font-size:15px;color:var(--text-muted,#8A8A8A);margin-bottom:16px;">Desde el 18 de abril de 2024 · 3:00 p.m.</div>
+            <div id="ttm-days" style="font-size:32px;font-weight:800;color:var(--pink,#D4537E);line-height:1.2;"></div>
+            <div style="font-size:13px;color:var(--text-muted,#8A8A8A);margin-bottom:18px;">días juntos</div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
+                <div style="background:#FBEAF0;border-radius:12px;padding:10px 14px;flex:1;">
+                    <div id="ttm-hours" style="font-size:20px;font-weight:700;color:#D4537E;"></div>
+                    <div style="font-size:11px;color:var(--text-muted,#8A8A8A);">horas</div>
+                </div>
+                <div style="background:#FBEAF0;border-radius:12px;padding:10px 14px;flex:1;">
+                    <div id="ttm-minutes" style="font-size:20px;font-weight:700;color:#D4537E;"></div>
+                    <div style="font-size:11px;color:var(--text-muted,#8A8A8A);">minutos</div>
+                </div>
+            </div>
+            <div id="ttm-breakdown" style="font-size:13px;color:var(--text-muted,#8A8A8A);margin-bottom:20px;"></div>
+            <button onclick="closeTimeTogetherModal()" style="background:linear-gradient(135deg,#D4537E,#B23A63);color:#fff;border:none;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;">Cerrar 💖</button>
+        </div>
+    </div>
+
     <!-- APP -->
     <div id="app">
         <div class="app-header">
             <div>
                 <div class="header-title">💖 Nuestros <em>Recuerdos</em></div>
-                <div class="header-sub" id="header-author-sub">Desde el 18 de abril de 2024 • En la nube ☁️</div>
+                <div class="header-sub" id="header-author-sub" onclick="openTimeTogetherModal()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;">Desde el 18 de abril de 2024 • En la nube ☁️</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
                 <button class="settings-btn" onclick="sendThinkingOfYou()" title="Pensando en ti">💭</button>
@@ -2113,16 +2135,58 @@
             updateHeaderAuthor();
         }
 
+        // Fecha y hora exacta en que se hicieron novios: 18 de abril de 2024, 3:00 p.m. (hora local)
+        const ANNIVERSARY = new Date(2024, 3, 18, 15, 0, 0);
+
         function updateHeaderAuthor() {
             const sub = document.getElementById("header-author-sub");
             if (!sub) return;
-            const ANNIVERSARY = new Date("2024-04-18");
             const today = new Date();
             const days = Math.floor((today - ANNIVERSARY) / (1000 * 60 * 60 * 24));
             const greeting = currentAuthor === "Ever" ? "💙 Hola Ever" : currentAuthor === "Rossi" ? "🩷 Hola Rossi" : "💖";
             sub.textContent = currentAuthor
                 ? `${greeting} • ${days} días juntos 🗓️`
                 : `${days} días juntos 🗓️ • En la nube ☁️`;
+        }
+
+        function openTimeTogetherModal() {
+            const now = new Date();
+            const diffMs = now - ANNIVERSARY;
+
+            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const totalMinutes = Math.floor(diffMs / (1000 * 60));
+
+            // Desglose tipo "X años, Y meses, Z días"
+            let years = now.getFullYear() - ANNIVERSARY.getFullYear();
+            let months = now.getMonth() - ANNIVERSARY.getMonth();
+            let days = now.getDate() - ANNIVERSARY.getDate();
+            if (now.getHours() < ANNIVERSARY.getHours()) days--;
+            if (days < 0) {
+                months--;
+                const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            document.getElementById("ttm-days").textContent = totalDays.toLocaleString("es-CO");
+            document.getElementById("ttm-hours").textContent = totalHours.toLocaleString("es-CO");
+            document.getElementById("ttm-minutes").textContent = totalMinutes.toLocaleString("es-CO");
+
+            const parts = [];
+            if (years > 0) parts.push(`${years} año${years !== 1 ? "s" : ""}`);
+            if (months > 0) parts.push(`${months} mes${months !== 1 ? "es" : ""}`);
+            if (days > 0 || parts.length === 0) parts.push(`${days} día${days !== 1 ? "s" : ""}`);
+            document.getElementById("ttm-breakdown").textContent = "= " + parts.join(", ");
+
+            document.getElementById("time-together-overlay").style.display = "flex";
+        }
+
+        function closeTimeTogetherModal() {
+            document.getElementById("time-together-overlay").style.display = "none";
         }
 
         // ── REACCIONES: emoji usable ──────────────────────────────────
