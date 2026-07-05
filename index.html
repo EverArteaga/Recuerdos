@@ -2391,7 +2391,7 @@
             <div class="photo-card" onclick="openLightbox(${idx})">
                 <img src="${p.src}" alt="recuerdo" />
                 <div class="photo-card-info">
-                    <div class="photo-date-text">📅 ${p.date}</div>
+                    <div class="photo-date-text">📅 ${p.date}${p.created_at ? " · 🕒 " + formatUploadTime(p.created_at) : ""}</div>
                     <div class="photo-reactions-row">
                         ${Object.entries(reactions).filter(([, c]) => c > 0).map(([emoji, cnt]) => `
                             <button class="note-reaction-btn ${mySet.has(emoji) ? 'mine' : ''}"
@@ -2416,10 +2416,18 @@
             <img src="${p.src}" alt="recuerdo" />
             <button class="photo-del" onclick="event.stopPropagation();deletePhoto(${p.id})">✕</button>
             <button class="photo-add-reaction" onclick="event.stopPropagation();openEmojiPicker(this, em=>togglePhotoReaction(${p.id},em,${idx}))">😊</button>
-            <div class="photo-date">${p.date}</div>
+            <div class="photo-date">${p.date}${p.created_at ? " · 🕒 " + formatUploadTime(p.created_at) : ""}</div>
             <div class="photo-reactions">${reactionPills}</div>
         </div>`;
             }).join("");
+        }
+
+        // Formatea la hora exacta de subida a partir de created_at (columna automática de Supabase)
+        function formatUploadTime(createdAt) {
+            if (!createdAt) return "";
+            try {
+                return new Date(createdAt).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit", hour12: true });
+            } catch (e) { return ""; }
         }
 
         async function togglePhotoReaction(photoId, emoji, idx) {
@@ -2613,7 +2621,7 @@
                 </div>
                 <span class="audio-duration" id="adur-${n.id}">${formatDur(n.audio_duration || 0)}</span>
             </div>` : ""}
-            <div class="note-card-date">${n.date}</div>
+            <div class="note-card-date">${n.date}${n.created_at ? " · 🕒 " + formatUploadTime(n.created_at) : ""}</div>
             <div class="note-reactions">
                 ${reactionBtns}
                 <button class="note-add-reaction"
@@ -2806,6 +2814,9 @@
                 const replyBadge = l.reply
                     ? `<div style="font-size:11px;color:var(--pink);margin-top:6px;">💬 Ya tiene respuesta</div>`
                     : "";
+                const writtenLabel = l.created_at
+                    ? `<div class="letter-card-date" style="opacity:.75;">✍️ Escrita el ${new Date(l.created_at).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })} · 🕒 ${formatUploadTime(l.created_at)}</div>`
+                    : "";
 
                 return `
         <div class="letter-card ${isUnlocked ? "" : "locked"}" id="lcard-${l.id}">
@@ -2813,6 +2824,7 @@
             ${authorBadge}
             <div class="letter-card-title">${isUnlocked ? (l.is_normal ? "💌 " : "💌 ") : "🔒 "}${l.title}</div>
             ${dateLabel ? `<div class="letter-card-date">📅 ${isUnlocked ? "Desbloqueada el " : "Se abre el "}${dateLabel}</div>` : ""}
+            ${writtenLabel}
             ${!isUnlocked ? `
                 <div class="letter-preview-blur">${previewText}</div>
                 ${countdown ? `<div class="letter-countdown">⏳ Se abre en ${countdown}</div>` : ""}
