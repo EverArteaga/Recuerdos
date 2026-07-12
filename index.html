@@ -1550,6 +1550,78 @@
             display: flex;
         }
 
+        /* Modo cuadro viviente */
+        .frame-mode-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .frame-mode-overlay.open {
+            display: flex;
+        }
+
+        .frame-img-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.4s ease;
+        }
+
+        .frame-img-layer.visible {
+            opacity: 1;
+        }
+
+        .frame-caption {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 40px 24px 28px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 1.4s ease;
+        }
+
+        .frame-caption.visible {
+            opacity: 1;
+        }
+
+        .frame-mode-empty {
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            text-align: center;
+            padding: 24px;
+            opacity: 0.8;
+        }
+
+        .frame-exit-hint {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            color: rgba(255, 255, 255, 0.75);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            z-index: 3;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px 12px;
+            border-radius: 20px;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
         .letter-open-box {
             background: white;
             border-radius: var(--radius);
@@ -1934,7 +2006,8 @@
             </div>
             <div class="settings-section">
                 <span class="settings-label">Notificaciones</span>
-                <button class="settings-remove-bg" id="push-toggle-btn" style="background:var(--blue-light);color:var(--blue);" onclick="togglePushSubscription()">
+                <button class="settings-remove-bg" id="push-toggle-btn"
+                    style="background:var(--blue-light);color:var(--blue);" onclick="togglePushSubscription()">
                     🔔 Activar notificaciones
                 </button>
             </div>
@@ -1955,7 +2028,8 @@
                     <div class="letter-reply-text" id="lo-reply-text"></div>
                 </div>
                 <div id="lo-reply-form">
-                    <textarea class="letter-reply-input" id="lo-reply-input" placeholder="Escribe tu respuesta aquí... 💕"></textarea>
+                    <textarea class="letter-reply-input" id="lo-reply-input"
+                        placeholder="Escribe tu respuesta aquí... 💕"></textarea>
                     <button class="letter-reply-btn" onclick="saveLetterReply()">Guardar respuesta 💕</button>
                 </div>
             </div>
@@ -1964,38 +2038,26 @@
     </div>
 
     <!-- CANVAS CONFETTI -->
-    <canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;display:none;"></canvas>
-
-    <!-- MODAL: Tiempo juntos -->
-    <div id="time-together-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this) closeTimeTogetherModal()">
-        <div style="background:var(--bg,#FFFBF8);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-            <div style="font-size:40px;margin-bottom:6px;">💕</div>
-            <div style="font-size:15px;color:var(--text-muted,#8A8A8A);margin-bottom:16px;">Desde el 18 de abril de 2024 · 4:00 p.m.</div>
-            <div id="ttm-days" style="font-size:32px;font-weight:800;color:var(--pink,#D4537E);line-height:1.2;"></div>
-            <div style="font-size:13px;color:var(--text-muted,#8A8A8A);margin-bottom:18px;">días juntos</div>
-            <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
-                <div style="background:#FBEAF0;border-radius:12px;padding:10px 14px;flex:1;">
-                    <div id="ttm-hours" style="font-size:20px;font-weight:700;color:#D4537E;"></div>
-                    <div style="font-size:11px;color:var(--text-muted,#8A8A8A);">horas</div>
-                </div>
-                <div style="background:#FBEAF0;border-radius:12px;padding:10px 14px;flex:1;">
-                    <div id="ttm-minutes" style="font-size:20px;font-weight:700;color:#D4537E;"></div>
-                    <div style="font-size:11px;color:var(--text-muted,#8A8A8A);">minutos</div>
-                </div>
-            </div>
-            <div id="ttm-breakdown" style="font-size:13px;color:var(--text-muted,#8A8A8A);margin-bottom:20px;"></div>
-            <button onclick="closeTimeTogetherModal()" style="background:linear-gradient(135deg,#D4537E,#B23A63);color:#fff;border:none;border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;">Cerrar 💖</button>
+    <div class="frame-mode-overlay" id="frame-mode-overlay" onclick="closeFrameMode()">
+        <div class="frame-exit-hint" id="frame-exit-hint">Toca para salir</div>
+        <div id="frame-layers"></div>
+        <div class="frame-caption" id="frame-caption"></div>
+        <div class="frame-mode-empty" id="frame-mode-empty" style="display:none;">
+            📷 Aún no hay fotos para mostrar en el cuadro.
         </div>
     </div>
+
+    <canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:9998;display:none;"></canvas>
 
     <!-- APP -->
     <div id="app">
         <div class="app-header">
             <div>
                 <div class="header-title">💖 Nuestros <em>Recuerdos</em></div>
-                <div class="header-sub" id="header-author-sub" onclick="openTimeTogetherModal()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;">Desde el 18 de abril de 2024 • En la nube ☁️</div>
+                <div class="header-sub" id="header-author-sub">Desde el 18 de abril de 2024 • En la nube ☁️</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
+                <button class="settings-btn" onclick="openFrameMode()" title="Modo cuadro viviente">🖼️</button>
                 <button class="settings-btn" onclick="sendThinkingOfYou()" title="Pensando en ti">💭</button>
                 <button class="logout-btn" onclick="switchUser()" title="Cambiar quién soy"
                     style="font-size:12px;padding:6px 12px;">👤 Cambiar</button>
@@ -2021,7 +2083,8 @@
                 <div class="txt">Agregar fotos</div>
                 <div class="sub">Toca para seleccionar una o varias fotos</div>
             </div>
-            <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="addPhoto(event)" />
+            <input type="file" id="file-input" accept="image/*" multiple style="display:none"
+                onchange="addPhoto(event)" />
 
             <!-- Selector de vista -->
             <div class="view-toggle">
@@ -2080,8 +2143,10 @@
         <div id="tab-cartas" class="tab-content tab-letters">
             <div class="letter-form-card">
                 <div class="letter-type-toggle">
-                    <button class="letter-type-btn active" id="ltype-normal" onclick="setLetterType('normal')">💌 Carta normal</button>
-                    <button class="letter-type-btn" id="ltype-programada" onclick="setLetterType('programada')">🔒 Carta programada</button>
+                    <button class="letter-type-btn active" id="ltype-normal" onclick="setLetterType('normal')">💌 Carta
+                        normal</button>
+                    <button class="letter-type-btn" id="ltype-programada" onclick="setLetterType('programada')">🔒 Carta
+                        programada</button>
                 </div>
                 <label class="form-label">Para quién es la carta</label>
                 <input class="letter-input" id="letter-title"
@@ -2135,58 +2200,16 @@
             updateHeaderAuthor();
         }
 
-        // Fecha y hora exacta en que se hicieron novios: 18 de abril de 2024, 4:00 p.m. (hora local)
-        const ANNIVERSARY = new Date(2024, 3, 18, 16, 0, 0);
-
         function updateHeaderAuthor() {
             const sub = document.getElementById("header-author-sub");
             if (!sub) return;
+            const ANNIVERSARY = new Date("2024-04-18");
             const today = new Date();
             const days = Math.floor((today - ANNIVERSARY) / (1000 * 60 * 60 * 24));
             const greeting = currentAuthor === "Ever" ? "💙 Hola Ever" : currentAuthor === "Rossi" ? "🩷 Hola Rossi" : "💖";
             sub.textContent = currentAuthor
                 ? `${greeting} • ${days} días juntos 🗓️`
                 : `${days} días juntos 🗓️ • En la nube ☁️`;
-        }
-
-        function openTimeTogetherModal() {
-            const now = new Date();
-            const diffMs = now - ANNIVERSARY;
-
-            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(diffMs / (1000 * 60));
-
-            // Desglose tipo "X años, Y meses, Z días"
-            let years = now.getFullYear() - ANNIVERSARY.getFullYear();
-            let months = now.getMonth() - ANNIVERSARY.getMonth();
-            let days = now.getDate() - ANNIVERSARY.getDate();
-            if (now.getHours() < ANNIVERSARY.getHours()) days--;
-            if (days < 0) {
-                months--;
-                const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-                days += prevMonth.getDate();
-            }
-            if (months < 0) {
-                years--;
-                months += 12;
-            }
-
-            document.getElementById("ttm-days").textContent = totalDays.toLocaleString("es-CO");
-            document.getElementById("ttm-hours").textContent = totalHours.toLocaleString("es-CO");
-            document.getElementById("ttm-minutes").textContent = totalMinutes.toLocaleString("es-CO");
-
-            const parts = [];
-            if (years > 0) parts.push(`${years} año${years !== 1 ? "s" : ""}`);
-            if (months > 0) parts.push(`${months} mes${months !== 1 ? "es" : ""}`);
-            if (days > 0 || parts.length === 0) parts.push(`${days} día${days !== 1 ? "s" : ""}`);
-            document.getElementById("ttm-breakdown").textContent = "= " + parts.join(", ");
-
-            document.getElementById("time-together-overlay").style.display = "flex";
-        }
-
-        function closeTimeTogetherModal() {
-            document.getElementById("time-together-overlay").style.display = "none";
         }
 
         // ── REACCIONES: emoji usable ──────────────────────────────────
@@ -2332,8 +2355,7 @@
         function switchTab(name, el) {
             document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-            const tabBtn = el || document.querySelector(`.tab[onclick*="'${name}'"]`);
-            if (tabBtn) tabBtn.classList.add("active");
+            el.classList.add("active");
             document.getElementById("tab-" + name).classList.add("active");
         }
 
@@ -2456,7 +2478,7 @@
             <div class="photo-card" onclick="openLightbox(${idx})">
                 <img src="${p.src}" alt="recuerdo" />
                 <div class="photo-card-info">
-                    <div class="photo-date-text">📅 ${p.date}${p.created_at ? " · 🕒 " + formatUploadTime(p.created_at) : ""}</div>
+                    <div class="photo-date-text">📅 ${p.date}</div>
                     <div class="photo-reactions-row">
                         ${Object.entries(reactions).filter(([, c]) => c > 0).map(([emoji, cnt]) => `
                             <button class="note-reaction-btn ${mySet.has(emoji) ? 'mine' : ''}"
@@ -2481,18 +2503,10 @@
             <img src="${p.src}" alt="recuerdo" />
             <button class="photo-del" onclick="event.stopPropagation();deletePhoto(${p.id})">✕</button>
             <button class="photo-add-reaction" onclick="event.stopPropagation();openEmojiPicker(this, em=>togglePhotoReaction(${p.id},em,${idx}))">😊</button>
-            <div class="photo-date">${p.date}${p.created_at ? " · 🕒 " + formatUploadTime(p.created_at) : ""}</div>
+            <div class="photo-date">${p.date}</div>
             <div class="photo-reactions">${reactionPills}</div>
         </div>`;
             }).join("");
-        }
-
-        // Formatea la hora exacta de subida a partir de created_at (columna automática de Supabase)
-        function formatUploadTime(createdAt) {
-            if (!createdAt) return "";
-            try {
-                return new Date(createdAt).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit", hour12: true });
-            } catch (e) { return ""; }
         }
 
         async function togglePhotoReaction(photoId, emoji, idx) {
@@ -2560,6 +2574,96 @@
         </button>`;
             }).join("");
         }
+        // ── Modo cuadro viviente ──
+        let frameInterval = null;
+        let frameIndex = 0;
+        let frameLayerA = null;
+        let frameLayerB = null;
+        let frameWakeLock = null;
+        const FRAME_DELAY = 7000;
+
+        function formatFrameDate(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+            } catch (e) {
+                return "";
+            }
+        }
+
+        async function openFrameMode() {
+            if (!allPhotos || allPhotos.length === 0) {
+                document.getElementById("frame-mode-empty").style.display = "block";
+                document.getElementById("frame-layers").style.display = "none";
+                document.getElementById("frame-caption").style.display = "none";
+            } else {
+                document.getElementById("frame-mode-empty").style.display = "none";
+                document.getElementById("frame-layers").style.display = "block";
+                document.getElementById("frame-caption").style.display = "block";
+
+                const layers = document.getElementById("frame-layers");
+                layers.innerHTML =
+                    '<div class="frame-img-layer" id="frame-layer-a"></div>' +
+                    '<div class="frame-img-layer" id="frame-layer-b"></div>';
+                frameLayerA = document.getElementById("frame-layer-a");
+                frameLayerB = document.getElementById("frame-layer-b");
+
+                frameIndex = 0;
+                showFramePhoto(frameIndex, true);
+                frameInterval = setInterval(() => {
+                    frameIndex = (frameIndex + 1) % allPhotos.length;
+                    showFramePhoto(frameIndex, false);
+                }, FRAME_DELAY);
+            }
+
+            document.getElementById("frame-mode-overlay").classList.add("open");
+
+            // Ocultar el hint de salida tras unos segundos
+            const hint = document.getElementById("frame-exit-hint");
+            hint.style.opacity = "1";
+            clearTimeout(window._frameHintTimeout);
+            window._frameHintTimeout = setTimeout(() => { hint.style.opacity = "0"; }, 4000);
+
+            // Mantener pantalla encendida si el navegador lo soporta
+            try {
+                if ("wakeLock" in navigator) {
+                    frameWakeLock = await navigator.wakeLock.request("screen");
+                }
+            } catch (e) {
+                // No es crítico si falla o no hay soporte
+            }
+        }
+
+        function showFramePhoto(idx, first) {
+            const photo = allPhotos[idx];
+            if (!photo) return;
+
+            const showing = frameLayerA.classList.contains("visible") ? frameLayerA : frameLayerB;
+            const next = showing === frameLayerA ? frameLayerB : frameLayerA;
+
+            next.style.backgroundImage = `url('${photo.src}')`;
+            next.classList.add("visible");
+            showing.classList.remove("visible");
+
+            const caption = document.getElementById("frame-caption");
+            caption.textContent = formatFrameDate(photo.date);
+            caption.classList.remove("visible");
+            requestAnimationFrame(() => caption.classList.add("visible"));
+        }
+
+        function closeFrameMode() {
+            document.getElementById("frame-mode-overlay").classList.remove("open");
+            if (frameInterval) {
+                clearInterval(frameInterval);
+                frameInterval = null;
+            }
+            if (frameWakeLock) {
+                frameWakeLock.release().catch(() => { });
+                frameWakeLock = null;
+            }
+        }
+
         // Cerrar lightbox al hacer click fuera de la imagen
         document.getElementById("lightbox").addEventListener("click", function (e) {
             if (e.target === this) closeLightbox();
@@ -2622,7 +2726,7 @@
             if (!note) return;
 
             // Ir a la pestaña de notas y rellenar el formulario con los datos actuales
-            switchTab("notas");
+            switchTab("notes");
             document.getElementById("note-title").value = note.title || "";
             document.getElementById("note-body").value = note.body || "";
 
@@ -2686,7 +2790,7 @@
                 </div>
                 <span class="audio-duration" id="adur-${n.id}">${formatDur(n.audio_duration || 0)}</span>
             </div>` : ""}
-            <div class="note-card-date">${n.date}${n.created_at ? " · 🕒 " + formatUploadTime(n.created_at) : ""}</div>
+            <div class="note-card-date">${n.date}</div>
             <div class="note-reactions">
                 ${reactionBtns}
                 <button class="note-add-reaction"
@@ -2879,9 +2983,6 @@
                 const replyBadge = l.reply
                     ? `<div style="font-size:11px;color:var(--pink);margin-top:6px;">💬 Ya tiene respuesta</div>`
                     : "";
-                const writtenLabel = l.created_at
-                    ? `<div class="letter-card-date" style="opacity:.75;">✍️ Escrita el ${new Date(l.created_at).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })} · 🕒 ${formatUploadTime(l.created_at)}</div>`
-                    : "";
 
                 return `
         <div class="letter-card ${isUnlocked ? "" : "locked"}" id="lcard-${l.id}">
@@ -2889,7 +2990,6 @@
             ${authorBadge}
             <div class="letter-card-title">${isUnlocked ? (l.is_normal ? "💌 " : "💌 ") : "🔒 "}${l.title}</div>
             ${dateLabel ? `<div class="letter-card-date">📅 ${isUnlocked ? "Desbloqueada el " : "Se abre el "}${dateLabel}</div>` : ""}
-            ${writtenLabel}
             ${!isUnlocked ? `
                 <div class="letter-preview-blur">${previewText}</div>
                 ${countdown ? `<div class="letter-countdown">⏳ Se abre en ${countdown}</div>` : ""}
@@ -3188,7 +3288,7 @@
         // ══════════════════════════════════════════════════════════════
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register(new URL("sw.js", location.href).href).catch(err => {
+                navigator.serviceWorker.register("./sw.js").catch(err => {
                     console.error("Error registrando service worker:", err);
                 });
             });
@@ -3228,75 +3328,38 @@
         }
 
         async function togglePushSubscription() {
-            if (!("serviceWorker" in navigator)) {
-                showToast("🔕 Tu navegador no soporta service workers");
-                return;
-            }
-            if (!("PushManager" in window)) {
+            if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
                 showToast("🔕 Tu navegador no soporta notificaciones push");
                 return;
             }
-
             const btn = document.getElementById("push-toggle-btn");
-            btn.textContent = "⏳ Activando...";
-            btn.disabled = true;
+            const reg = await navigator.serviceWorker.ready;
+            const existing = await reg.pushManager.getSubscription();
 
-            // Helper: cualquier promesa con timeout, para que nada deje el botón pegado
-            const withTimeout = (promise, ms, label) =>
-                Promise.race([
-                    promise,
-                    new Promise((_, reject) => setTimeout(() => reject(new Error(label + " tardó demasiado")), ms))
-                ]);
+            if (existing) {
+                // Desactivar
+                await db.from("push_subscriptions").delete().eq("endpoint", existing.endpoint);
+                await existing.unsubscribe();
+                showToast("🔕 Notificaciones desactivadas");
+                await updatePushButtonLabel();
+                return;
+            }
 
+            // Activar
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                showToast("🔕 Necesitas dar permiso para recibir notificaciones");
+                return;
+            }
+            if (VAPID_PUBLIC_KEY === "PEGA_AQUI_TU_VAPID_PUBLIC_KEY") {
+                showToast("⚠️ Falta configurar la VAPID key en el código");
+                return;
+            }
             try {
-                // Esperar el SW con timeout de 5 segundos
-                let reg;
-                try {
-                    reg = await withTimeout(navigator.serviceWorker.ready, 5000, "Service worker");
-                } catch (e) {
-                    // SW no instalado o tardó mucho — intentar registrarlo ahora
-                    showToast("⏳ Instalando service worker...");
-                    try {
-                        reg = await navigator.serviceWorker.register(new URL("sw.js", location.href).href);
-                        reg = await withTimeout(navigator.serviceWorker.ready, 5000, "Service worker");
-                    } catch (swErr) {
-                        showToast("❌ No se pudo instalar el service worker. ¿El archivo sw.js está en la raíz del repo?");
-                        btn.textContent = "🔔 Activar notificaciones";
-                        btn.disabled = false;
-                        return;
-                    }
-                }
-
-                const existing = await reg.pushManager.getSubscription();
-                if (existing) {
-                    await db.from("push_subscriptions").delete().eq("endpoint", existing.endpoint);
-                    await existing.unsubscribe();
-                    showToast("🔕 Notificaciones desactivadas");
-                    await updatePushButtonLabel();
-                    btn.disabled = false;
-                    return;
-                }
-
-                // Timeout de 10s para el permiso — si el navegador no muestra el diálogo, no se queda colgado
-                const permission = await withTimeout(Notification.requestPermission(), 10000, "La solicitud de permiso");
-                if (permission !== "granted") {
-                    showToast(permission === "denied"
-                        ? "🔕 Bloqueaste las notificaciones. Actívalas desde el candado 🔒 junto a la URL."
-                        : "🔕 Necesitas dar permiso para recibir notificaciones");
-                    btn.disabled = false;
-                    await updatePushButtonLabel();
-                    return;
-                }
-
-                // Timeout de 10s para subscribe() — es el punto donde más se cuelga en Android/Chrome
-                const sub = await withTimeout(
-                    reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-                    }),
-                    10000,
-                    "El registro push"
-                );
+                const sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
                 const subJson = sub.toJSON();
                 const { error } = await db.from("push_subscriptions").upsert({
                     author: currentAuthor || null,
@@ -3307,11 +3370,9 @@
                 if (error) throw error;
                 showToast("🔔 ¡Notificaciones activadas!");
             } catch (err) {
-                console.error("Error push:", err);
-                showToast("❌ Error: " + err.message);
+                console.error("Error al suscribirse a push:", err);
+                showToast("❌ No se pudo activar las notificaciones");
             }
-
-            btn.disabled = false;
             await updatePushButtonLabel();
         }
 
